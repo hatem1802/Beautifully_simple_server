@@ -22,6 +22,12 @@ const userSchema = new Schema(
       minlength: [6, "Password must be at least 6 characters"],
       select: false,
     },
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: [20, "Phone must not exceed 20 characters"],
+    },
     role: {
       type: String,
       enum: {
@@ -29,6 +35,14 @@ const userSchema = new Schema(
         message: "Role must be either student or admin",
       },
       default: "student",
+    },
+    status: {
+      type: String,
+      enum: {
+        values: ["active", "disabled"],
+        message: "Status must be active or disabled",
+      },
+      default: "active",
     },
   },
   {
@@ -50,7 +64,9 @@ userSchema.methods.toPublic = function toPublic() {
     _id: this._id,
     name: this.name,
     email: this.email,
+    phone: this.phone,
     role: this.role,
+    status: this.status,
     created_at: this.created_at,
   };
 };

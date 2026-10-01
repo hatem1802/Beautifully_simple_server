@@ -1,0 +1,2947 @@
+{
+  "info": {
+    "name": "Beautifully Simple API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run the folders in order: Users, Subjects, Packages, Requests, Subscriptions, Cleanup.\nDefault accounts match `npm run seed`. Change them in the collection Variables if needed.\nRequests with file fields need you to pick files in the Body tab (Postman does not export file paths).\nPackages sets packageId, so Create - package no longer needs a seeded package.\nLists accept page and limit (default 20, max 100) and return pagination."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "studentEmail",
+      "value": "sara@example.com"
+    },
+    {
+      "key": "studentPassword",
+      "value": "Student@123"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@beautifullysimple.com"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Admin@123"
+    },
+    {
+      "key": "studentToken",
+      "value": ""
+    },
+    {
+      "key": "studentId",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "subjectId",
+      "value": ""
+    },
+    {
+      "key": "lectureId",
+      "value": ""
+    },
+    {
+      "key": "newLectureId",
+      "value": ""
+    },
+    {
+      "key": "fileId",
+      "value": ""
+    },
+    {
+      "key": "packageId",
+      "value": ""
+    },
+    {
+      "key": "requestId",
+      "value": ""
+    },
+    {
+      "key": "jsonSubjectId",
+      "value": ""
+    },
+    {
+      "key": "lectureRequestId",
+      "value": ""
+    },
+    {
+      "key": "packageRequestId",
+      "value": ""
+    },
+    {
+      "key": "subscriptionId",
+      "value": ""
+    },
+    {
+      "key": "lectureSubscriptionId",
+      "value": ""
+    },
+    {
+      "key": "questionId",
+      "value": ""
+    },
+    {
+      "key": "questionAnswer",
+      "value": ""
+    },
+    {
+      "key": "finalQuestionId",
+      "value": ""
+    },
+    {
+      "key": "finalAnswer",
+      "value": ""
+    },
+    {
+      "key": "downloadFileId",
+      "value": ""
+    },
+    {
+      "key": "adminId",
+      "value": ""
+    },
+    {
+      "key": "grantSubscriptionId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Register student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201 or already registered 409', () => pm.expect(pm.response.code).to.be.oneOf([201, 409]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/register",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Student One\",\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register - invalid data (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/register",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"A\",\n  \"email\": \"not-an-email\",\n  \"password\": \"123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login student",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json().data;",
+                  "pm.collectionVariables.set('studentToken', data.token);",
+                  "pm.collectionVariables.set('studentId', data.user._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json().data;",
+                  "pm.collectionVariables.set('adminToken', data.token);",
+                  "pm.collectionVariables.set('adminId', data.user._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login - missing password (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{studentEmail}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get my profile (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('email matches', () => pm.expect(pm.response.json().data.user.email).to.eql(pm.collectionVariables.get('studentEmail')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update my profile (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/users/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Sara Updated\",\n  \"phone\": \"01000000000\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change password - wrong current (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/users/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"NewPass@123\",\n  \"currentPassword\": \"wrong\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List users (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users?search=sara&role=student&page=1&limit=10",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List users - student (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update user (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/users/{{studentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"01111111111\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Disable own account (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/{{adminId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"disabled\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Disable student (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/{{studentId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"disabled\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Disabled student token (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Enable student (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/users/{{studentId}}/status",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\"\n}"
+            }
+          }
+        }
+      ],
+      "description": "register always creates a student. login returns a JWT that later requests send as Bearer token."
+    },
+    {
+      "name": "Subjects",
+      "item": [
+        {
+          "name": "List subjects (public catalog)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('no answers or file links exposed', () => {",
+                  "  const body = pm.response.text();",
+                  "  pm.expect(body).to.not.include('correctAnswer');",
+                  "  pm.expect(body).to.not.include('uploads/pdfs');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects"
+          }
+        },
+        {
+          "name": "Create subject - student (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"name\": \"Not allowed\",\n  \"price\": 100\n}",
+                  "type": "text",
+                  "description": "All the data as JSON"
+                },
+                {
+                  "key": "lecture_1",
+                  "type": "file",
+                  "src": [],
+                  "description": "PDF files"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create subject - correctAnswer not in options (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"name\": \"Invalid quiz {{$timestamp}}\",\n  \"price\": 100,\n  \"finalQuiz\": {\n    \"questions\": [\n      { \"question\": \"Pick one\", \"options\": [\"A\", \"B\"], \"correctAnswer\": \"Z\", \"duration\": 30 }\n    ]\n  }\n}",
+                  "type": "text",
+                  "description": "All the data as JSON"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create subject - invalid JSON in data (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{ \"name\": \"Broken\", ",
+                  "type": "text",
+                  "description": "All the data as JSON"
+                },
+                {
+                  "key": "lecture_1",
+                  "type": "file",
+                  "src": [],
+                  "description": "PDF files"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create subject - file for unknown lecture (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "description": "lecture_9 has no lecture with order 9 in data, so the request fails and the file is deleted.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"name\": \"Unknown lecture {{$timestamp}}\",\n  \"price\": 100,\n  \"lectures\": [\n    {\n      \"title\": \"Only lecture\",\n      \"order\": 1\n    }\n  ]\n}",
+                  "type": "text",
+                  "description": "All the data as JSON"
+                },
+                {
+                  "key": "lecture_9",
+                  "type": "file",
+                  "src": [],
+                  "description": "PDF files"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create subject with lectures and quizzes (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const subject = pm.response.json().data.subject;",
+                  "pm.collectionVariables.set('subjectId', subject._id);",
+                  "pm.collectionVariables.set('lectureId', subject.lectures[0]._id);",
+                  "pm.test('files named subjectName-lecnum-uniqueID', () => {",
+                  "  subject.lectures.flatMap((l) => l.files).forEach((f) => pm.expect(f.url).to.match(/beautifully_simple\\/.+-\\d+-\\d+-[a-f0-9]{12}\\.pdf$/));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"name\": \"HTML Fundamentals {{$timestamp}}\",\n  \"description\": \"Learn the building blocks of every web page.\",\n  \"price\": 150,\n  \"durationDays\": 60,\n  \"lectures\": [\n    {\n      \"title\": \"Introduction to HTML\",\n      \"order\": 1,\n      \"description\": \"What HTML is and how pages are structured.\",\n      \"quiz\": {\n        \"questions\": [\n          {\n            \"question\": \"What does HTML stand for?\",\n            \"options\": [\n              \"Hyper Text Markup Language\",\n              \"High Tech Modern Language\",\n              \"Home Tool Markup Language\"\n            ],\n            \"correctAnswer\": \"Hyper Text Markup Language\",\n            \"duration\": 30\n          },\n          {\n            \"question\": \"Which tag creates a hyperlink?\",\n            \"options\": [\n              \"<a>\",\n              \"<link>\",\n              \"<href>\"\n            ],\n            \"correctAnswer\": \"<a>\",\n            \"duration\": 20\n          }\n        ]\n      }\n    },\n    {\n      \"title\": \"HTML Elements & Tags\",\n      \"order\": 2\n    }\n  ],\n  \"finalQuiz\": {\n    \"questions\": [\n      {\n        \"question\": \"Which attribute sets an image's alternative text?\",\n        \"options\": [\n          \"title\",\n          \"alt\",\n          \"src\"\n        ],\n        \"correctAnswer\": \"alt\",\n        \"duration\": 45\n      }\n    ]\n  }\n}",
+                  "type": "text",
+                  "description": "All the data as JSON"
+                },
+                {
+                  "key": "lecture_1",
+                  "type": "file",
+                  "src": [],
+                  "description": "PDF files"
+                },
+                {
+                  "key": "lecture_2",
+                  "type": "file",
+                  "src": [],
+                  "description": "PDF files"
+                }
+              ]
+            },
+            "description": "`data` holds the whole subject. Each `lecture_<order>` field holds that lecture's PDFs (repeat the key for more files). Field order does not matter."
+          }
+        },
+        {
+          "name": "Create subject - JSON only, no files (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('jsonSubjectId', pm.response.json().data.subject._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "description": "A subject without files can still be sent as plain JSON.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"CSS Basics {{$timestamp}}\",\n  \"price\": 120,\n  \"durationDays\": 45,\n  \"lectures\": [\n    {\n      \"title\": \"Selectors\",\n      \"order\": 1,\n      \"quiz\": {\n        \"questions\": [\n          {\n            \"question\": \"Which symbol selects a class?\",\n            \"options\": [\n              \".\",\n              \"#\",\n              \"*\"\n            ],\n            \"correctAnswer\": \".\",\n            \"duration\": 20\n          }\n        ]\n      }\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get subject (public catalog)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('no answers exposed', () => pm.expect(pm.response.text()).to.not.include('correctAnswer'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}"
+          }
+        },
+        {
+          "name": "Get subject (admin, full)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('answers visible to admin', () => pm.expect(pm.response.text()).to.include('correctAnswer'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update subject (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('price updated', () => pm.expect(pm.response.json().data.subject.price).to.eql(175));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 175,\n  \"durationDays\": 90\n}"
+            }
+          }
+        },
+        {
+          "name": "Add lecture with quiz (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('newLectureId', pm.response.json().data.lecture._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"title\": \"HTML Forms\",\n  \"order\": 3,\n  \"quiz\": {\n    \"questions\": [\n      {\n        \"question\": \"Which tag wraps form controls?\",\n        \"options\": [\n          \"<form>\",\n          \"<input>\",\n          \"<fieldset>\"\n        ],\n        \"correctAnswer\": \"<form>\",\n        \"duration\": 30\n      }\n    ]\n  }\n}",
+                  "type": "text",
+                  "description": "All the data as JSON"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [],
+                  "description": "PDF files"
+                }
+              ]
+            },
+            "description": "`data` = lecture JSON (title, order, description, quiz). `files` = PDFs for this lecture."
+          }
+        },
+        {
+          "name": "Add lecture - duplicate number (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"title\": \"Duplicate\",\n  \"order\": 1\n}",
+                  "type": "text",
+                  "description": "All the data as JSON"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add lecture without files (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "data",
+                  "value": "{\n  \"title\": \"HTML Tables\",\n  \"order\": 4\n}",
+                  "type": "text",
+                  "description": "All the data as JSON"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update lecture (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{newLectureId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"HTML Forms & Inputs\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Set lecture quiz (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}/quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questions\": [\n    {\n      \"question\": \"Which tag is the root of an HTML page?\",\n      \"options\": [\"<html>\", \"<body>\", \"<head>\"],\n      \"correctAnswer\": \"<html>\",\n      \"duration\": 25\n    },\n    {\n      \"question\": \"Where does the page title go?\",\n      \"options\": [\"<head>\", \"<footer>\"],\n      \"correctAnswer\": \"<head>\",\n      \"duration\": 20\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Set final quiz (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/final-quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questions\": [\n    {\n      \"question\": \"Which tag creates a numbered list?\",\n      \"options\": [\"<ol>\", \"<ul>\", \"<li>\"],\n      \"correctAnswer\": \"<ol>\",\n      \"duration\": 40\n    },\n    {\n      \"question\": \"Which attribute opens a link in a new tab?\",\n      \"options\": [\"target=\\\"_blank\\\"\", \"rel=\\\"new\\\"\", \"href=\\\"_new\\\"\"],\n      \"correctAnswer\": \"target=\\\"_blank\\\"\",\n      \"duration\": 40\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Upload lecture PDFs (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const files = pm.response.json().data.files;",
+                  "pm.collectionVariables.set('fileId', files[files.length - 1]._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}/files",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "description": "Adds PDFs to an existing lecture. Field: files (up to 10, 20MB each)."
+          }
+        },
+        {
+          "name": "Upload lecture PDFs - student (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}/files",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload lecture PDFs - no files (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}/files",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            }
+          }
+        },
+        {
+          "name": "Delete lecture file (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}/files/{{fileId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove lecture quiz (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{newLectureId}}/quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete lecture (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{newLectureId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "description": "GET routes are public (catalog without answers or links). Admin token returns the full subject.\nEverything else is admin-only and checked before any file is saved.\nCreate subject / Add lecture use form-data: `data` = JSON text, PDFs in `lecture_<order>` (subject) or `files` (lecture).\nSaved file name: subjectName-lectureNumber-uniqueID.pdf in Cloudinary folder beautifully_simple."
+    },
+    {
+      "name": "Packages",
+      "description": "Admin creates and edits packages. Students only see published ones.\ndurationDays is a number of days (same unit as subjects).\nA package in an active subscription cannot be deleted.\nRun after Subjects: subjectId comes from Create subject.",
+      "item": [
+        {
+          "name": "Create package - student (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/packages",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Student bundle\",\n  \"price\": 100,\n  \"durationDays\": 30,\n  \"subjectIds\": [\n    \"{{subjectId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Create package - duplicate subjects (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/packages",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dup\",\n  \"price\": 100,\n  \"durationDays\": 30,\n  \"subjectIds\": [\n    \"{{subjectId}}\",\n    \"{{subjectId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Create package (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const pkg = pm.response.json().data.package;",
+                  "pm.collectionVariables.set('packageId', pkg._id);",
+                  "pm.test('subjects resolved', () => pm.expect(pkg.subjects[0]._id).to.eql(pm.collectionVariables.get('subjectId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/packages",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Web bundle {{$timestamp}}\",\n  \"description\": \"One subject to start.\",\n  \"price\": 250,\n  \"durationDays\": 45,\n  \"status\": \"published\",\n  \"subjectIds\": [\n    \"{{subjectId}}\"\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "List packages (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/packages?page=1&limit=10",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Get package (public)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/packages/{{packageId}}",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Update package (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/packages/{{packageId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 200,\n  \"description\": \"Updated\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Requests",
+      "item": [
+        {
+          "name": "Create - subject (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const r = pm.response.json().data.request;",
+                  "pm.test('status is reviewing', () => pm.expect(r.status).to.eql('reviewing'));",
+                  "pm.collectionVariables.set('requestId', r._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "subjectId",
+                  "value": "{{subjectId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "notes",
+                  "value": "Paid via Vodafone Cash",
+                  "type": "text"
+                },
+                {
+                  "key": "paymentProof",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create - single lecture (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('lectureRequestId', pm.response.json().data.request._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "subjectId",
+                  "value": "{{subjectId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "lectureId",
+                  "value": "{{lectureId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "paymentProof",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create - package (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('packageRequestId', pm.response.json().data.request._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "packageId",
+                  "value": "{{packageId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "paymentProof",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "description": "Needs the packageId variable (a package _id from the seeded database)."
+          }
+        },
+        {
+          "name": "Create - no image (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "subjectId",
+                  "value": "{{subjectId}}",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create - no token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "subjectId",
+                  "value": "{{subjectId}}",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get my requests (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/requests/user/{{studentId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get request by id (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/requests/{{requestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get all requests - student (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/requests",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get all requests (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/requests?status=reviewing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "requests"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "reviewing"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit while reviewing - student (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/requests/{{requestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "notes",
+                  "value": "update",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change status with generic PATCH - admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/requests/{{requestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "description": "Status changes only go through /review.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Return without adminNotes (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/requests/{{requestId}}/review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"returned\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Return request (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json().data.request;",
+                  "pm.test('status is returned', () => pm.expect(r.status).to.eql('returned'));",
+                  "pm.test('adminNotes saved', () => pm.expect(r.adminNotes).to.eql('Image is not clear'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/requests/{{requestId}}/review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"returned\",\n  \"adminNotes\": \"Image is not clear\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Edit returned request (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('back to reviewing', () => pm.expect(pm.response.json().data.request.status).to.eql('reviewing'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/requests/{{requestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "notes",
+                  "value": "New clearer image",
+                  "type": "text"
+                },
+                {
+                  "key": "paymentProof",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve subject request (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const { request, subscription } = pm.response.json().data;",
+                  "pm.test('approved', () => pm.expect(request.status).to.eql('approved'));",
+                  "pm.test('subscription with full subject', () => pm.expect(subscription.enrollment.subjects[0].fullAccess).to.eql(true));",
+                  "pm.collectionVariables.set('subscriptionId', subscription._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/requests/{{requestId}}/review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "description": "Creates the subscription: endAt = now + subject durationDays, enrollment = every lecture of the subject.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"adminNotes\": \"Welcome!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve again (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/requests/{{requestId}}/review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Cancel approved request (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests/{{requestId}}/cancel",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve single lecture request (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const { subscription } = pm.response.json().data;",
+                  "pm.test('lecture only', () => pm.expect(subscription.enrollment.subjects[0].fullAccess).to.eql(false));",
+                  "pm.collectionVariables.set('lectureSubscriptionId', subscription._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/requests/{{lectureRequestId}}/review",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Cancel package request (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('cancelled', () => pm.expect(pm.response.json().data.request.status).to.eql('cancelled'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/requests/{{packageRequestId}}/cancel",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "description": "A student can cancel their own request only while it is reviewing or returned."
+          }
+        },
+        {
+          "name": "Delete - student (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/requests/{{requestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete approved request (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/requests/{{requestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete rejected request (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/requests/{{packageRequestId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "description": "userId always comes from the token. A new request is always saved as reviewing.\nTarget: subjectId, or subjectId + lectureId, or packageId. paymentProof = jpeg/png/webp image up to 5MB.\nStudent can edit only their own request and only when it is returned.\nAdmin decides with PATCH /requests/:id/review { decision: approved | rejected | returned, adminNotes }.\nadminNotes is required for rejected / returned. Approving creates the subscription with its enrollment.\nApproved requests cannot be deleted."
+    },
+    {
+      "name": "Subscriptions",
+      "description": "Created only by approving a request. Each subscription holds its enrollment:\nsubjects -> lectures (completed, completedAt, quizAttempt) + finalQuizAttempt.\nProgress and quizzes: owner student only, active subscription only. Each quiz has one attempt, graded on the server.\nSubscriptions past endAt become expired when read.\nLecture content / PDFs / final quiz questions live under /subjects and need an active subscription (admin always allowed).",
+      "item": [
+        {
+          "name": "Get my subscriptions (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const list = pm.response.json().data.subscriptions;",
+                  "pm.test('has subscriptions with percent', () => pm.expect(list[0].subjects[0]).to.have.property('percent'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subscriptions/me",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get all subscriptions - student (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subscriptions",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get all subscriptions (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subscriptions?userId={{studentId}}&status=active",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get lecture content (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const lecture = pm.response.json().data.lecture;",
+                  "pm.test('no correct answers', () => pm.expect(JSON.stringify(lecture)).to.not.include('correctAnswer'));",
+                  "const q = lecture.quiz.questions[0];",
+                  "pm.collectionVariables.set('questionId', q._id);",
+                  "pm.collectionVariables.set('questionAnswer', q.options[0]);",
+                  "pm.collectionVariables.set('downloadFileId', lecture.files[0] ? lecture.files[0]._id : '');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "description": "Files list (no links) and quiz questions without correct answers."
+          }
+        },
+        {
+          "name": "Get lecture content - no token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Download lecture PDF (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}/files/{{downloadFileId}}/download",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "description": "Needs a PDF on lecture 1 (picked in Create subject or Upload lecture PDFs). Use Send and Download to save it."
+          }
+        },
+        {
+          "name": "Complete lecture (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('completed', () => pm.expect(pm.response.json().data.progress.completed).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/subscriptions/{{subscriptionId}}/subjects/{{subjectId}}/lectures/{{lectureId}}/complete",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "description": "Idempotent: calling it again keeps the first completedAt."
+          }
+        },
+        {
+          "name": "Submit lecture quiz (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const attempt = pm.response.json().data.attempt;",
+                  "pm.test('graded with correct answers shown', () => pm.expect(attempt.answers[0]).to.have.property('correctAnswer'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subscriptions/{{subscriptionId}}/subjects/{{subjectId}}/lectures/{{lectureId}}/quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "description": "One attempt only. Questions left out count as wrong. selectedAnswer must be the option text.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    {\n      \"questionId\": \"{{questionId}}\",\n      \"selectedAnswer\": \"{{questionAnswer}}\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Submit lecture quiz again (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subscriptions/{{subscriptionId}}/subjects/{{subjectId}}/lectures/{{lectureId}}/quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    {\n      \"questionId\": \"{{questionId}}\",\n      \"selectedAnswer\": \"{{questionAnswer}}\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Get final quiz (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const q = pm.response.json().data.finalQuiz.questions[0];",
+                  "pm.collectionVariables.set('finalQuestionId', q._id);",
+                  "pm.collectionVariables.set('finalAnswer', q.options[1]);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/final-quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "description": "Needs a full subject subscription. Questions without correct answers."
+          }
+        },
+        {
+          "name": "Submit final quiz (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subscriptions/{{subscriptionId}}/subjects/{{subjectId}}/final-quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    {\n      \"questionId\": \"{{finalQuestionId}}\",\n      \"selectedAnswer\": \"{{finalAnswer}}\"\n    }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Final quiz with lecture-only subscription (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subscriptions/{{lectureSubscriptionId}}/subjects/{{subjectId}}/final-quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": []\n}"
+            }
+          }
+        },
+        {
+          "name": "Get subscription with progress (student)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const subject = pm.response.json().data.subscription.subjects[0];",
+                  "pm.test('progress counted', () => pm.expect(subject.completedCount).to.be.at.least(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subscriptions/{{subscriptionId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "description": "Lectures with completion, quiz attempts (answers + correct answers after submitting) and percent."
+          }
+        },
+        {
+          "name": "Get subscription (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subscriptions/{{subscriptionId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Grant lecture access (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const sub = pm.response.json().data.subscription;",
+                  "pm.test('source is admin', () => pm.expect(sub.source).to.eql('admin'));",
+                  "pm.collectionVariables.set('grantSubscriptionId', sub._id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/subscriptions",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "description": "Grants access without a request. durationDays overrides the subject duration. lectureId needs subjectId.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{studentId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"lectureId\": \"{{lectureId}}\",\n  \"durationDays\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "Revoke granted access (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('cancelled', () => pm.expect(pm.response.json().data.subscription.status).to.eql('cancelled'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/subscriptions/{{grantSubscriptionId}}/cancel",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Remove final quiz (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/final-quiz",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete subject - has active subscriptions (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "description": "Subjects with active subscriptions cannot be deleted."
+          }
+        },
+        {
+          "name": "Delete JSON-only subject (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/subjects/{{jsonSubjectId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete package (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/packages/{{packageId}}",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
+            },
+            "description": "Works here because the package request was cancelled, so it has no active subscription."
+          }
+        }
+      ]
+    }
+  ]
+}

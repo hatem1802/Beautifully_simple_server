@@ -13,6 +13,10 @@ const requestSchema = new Schema(
       ref: "Subject",
       default: null,
     },
+    lectureId: {
+      type: Schema.Types.ObjectId,
+      default: null,
+    },
     packageId: {
       type: Schema.Types.ObjectId,
       ref: "Package",
@@ -21,8 +25,8 @@ const requestSchema = new Schema(
     status: {
       type: String,
       enum: {
-        values: ["reviewing", "approved", "rejected", "returned"],
-        message: "Status must be reviewing, approved, rejected, or returned",
+        values: ["reviewing", "approved", "rejected", "returned", "cancelled"],
+        message: "Status must be reviewing, approved, rejected, returned, or cancelled",
       },
       required: [true, "Request status is required"],
       default: "reviewing",
@@ -37,13 +41,22 @@ const requestSchema = new Schema(
       default: "",
       trim: true,
     },
+    adminNotes: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    reviewedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: false },
   }
 );
 
-requestSchema.pre("validate", function ensureExactlyOneTarget(next) {
+requestSchema.pre("validate", function ensureExactlyOneTarget() {
   const hasSubject = Boolean(this.subjectId);
   const hasPackage = Boolean(this.packageId);
 
@@ -54,7 +67,9 @@ requestSchema.pre("validate", function ensureExactlyOneTarget(next) {
     );
   }
 
-  next();
+  if (this.lectureId && !hasSubject) {
+    this.invalidate("lectureId", "lectureId requires subjectId");
+  }
 });
 
 requestSchema.index({ userId: 1, status: 1 });

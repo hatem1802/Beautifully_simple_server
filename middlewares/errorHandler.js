@@ -1,4 +1,10 @@
-const errorHandler = (err, req, res, next) => {
+import { removeFile } from "../utils/index.js";
+
+const errorHandler = async (err, req, res, next) => {
+  // A failed request must not leave uploaded files on disk.
+  const uploaded = [req.file, ...(Array.isArray(req.files) ? req.files : [])].filter(Boolean);
+  await Promise.all(uploaded.map((file) => removeFile(file.path).catch(() => {})));
+
   let statusCode = err.statusCode || 500;
   let message = err.message || "Internal server error";
 
@@ -9,9 +15,19 @@ const errorHandler = (err, req, res, next) => {
       .join(", ");
   }
 
+  if (err.name === "MulterError") {
+    statusCode = 400;
+  }
+
+  if (err.name === "CastError") {
+    statusCode = 400;
+    message = `Invalid ${err.path}`;
+  }
+
   if (err.code === 11000) {
     statusCode = 409;
-    message = "Duplicate field value entered";
+    const field = Object.keys(err.keyValue || {})[0];
+    message = field ? `${field} already exists` : "Duplicate field value entered";
   }
 
   res.status(statusCode).json({

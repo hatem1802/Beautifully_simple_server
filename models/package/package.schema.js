@@ -5,7 +5,14 @@ const packageSchema = new Schema(
     name: {
       type: String,
       required: [true, "Package name is required"],
+      unique: true,
       trim: true,
+    },
+    description: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: [2000, "Description must not exceed 2000 characters"],
     },
     subjectIds: {
       type: [
@@ -17,9 +24,10 @@ const packageSchema = new Schema(
       required: [true, "Package subjects are required"],
       validate: {
         validator(value) {
-          return Array.isArray(value) && value.length >= 1;
+          if (!Array.isArray(value) || value.length < 1) return false;
+          return new Set(value.map(String)).size === value.length;
         },
-        message: "Package must include at least one subject",
+        message: "Package must include at least one subject, without duplicates",
       },
     },
     price: {
@@ -31,6 +39,14 @@ const packageSchema = new Schema(
       type: Number,
       required: [true, "Package durationDays is required"],
       min: [1, "Package durationDays must be at least 1"],
+    },
+    status: {
+      type: String,
+      enum: {
+        values: ["published", "draft"],
+        message: "Status must be published or draft",
+      },
+      default: "published",
     },
   },
   {

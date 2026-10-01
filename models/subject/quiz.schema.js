@@ -1,34 +1,19 @@
 import { Schema } from "mongoose";
-import { mcqSchema } from "./mcq.schema.js";
+import { questionSchema } from "./question.schema.js";
 
-const quizSchema = new Schema({
-  order: {
-    type: Number,
-    required: [true, "Quiz order is required"],
-    min: [0, "Quiz order must be at least 0"],
-  },
-  question: {
-    type: String,
-    required: [true, "Quiz question is required"],
-    trim: true,
-  },
-  mcqs: {
-    type: [mcqSchema],
-    validate: [
-      {
+const quizSchema = new Schema(
+  {
+    questions: {
+      type: [questionSchema],
+      validate: {
         validator(value) {
-          return Array.isArray(value) && value.length >= 2;
+          return Array.isArray(value) && value.length >= 1;
         },
-        message: "Quiz must have at least 2 MCQ options",
+        message: "Quiz must have at least one question",
       },
-      {
-        validator(value) {
-          return Array.isArray(value) && value.some((mcq) => mcq.isCorrect === true);
-        },
-        message: "Quiz must have at least one correct MCQ option",
-      },
-    ],
+    },
   },
-});
+  { _id: false }
+);
 
 export { quizSchema };

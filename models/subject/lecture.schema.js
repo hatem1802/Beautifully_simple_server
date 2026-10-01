@@ -12,15 +12,20 @@ const lectureSchema = new Schema(
     order: {
       type: Number,
       required: [true, "Lecture order is required"],
-      min: [0, "Lecture order must be at least 0"],
+      min: [1, "Lecture order must be at least 1"],
+    },
+    description: {
+      type: String,
+      default: "",
+      trim: true,
     },
     files: {
       type: [fileSchema],
       default: [],
     },
-    quizzes: {
-      type: [quizSchema],
-      default: [],
+    quiz: {
+      type: quizSchema,
+      default: null,
     },
   },
   {
