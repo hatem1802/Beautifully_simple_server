@@ -98,22 +98,43 @@ const getFinalQuizContent = async (req, res) => {
   send(res, 200, { finalQuiz }, "Final quiz fetched successfully");
 };
 
-const downloadLectureFile = async (req, res) => {
-  const { subjectId, lectureId, fileId } = req.params;
-  const file = await subjectsService.getLectureFile(req.user, subjectId, lectureId, fileId);
-  if (!file.url) return res.download(file.path, file.name);
+const sendLectureFile = async (res, file, disposition) => {
+  const filename = file.name.replace(/"/g, "");
+  if (!file.url) {
+    if (disposition === "attachment") return res.download(file.path, file.name);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+    return res.sendFile(file.path);
+  }
 
   const response = await fetch(file.url);
   if (!response.ok) throw new ApiError(404, "File is missing on the server");
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `inline; filename="${file.name.replace(/"/g, "")}"`);
+  res.setHeader("Content-Disposition", `${disposition}; filename="${filename}"`);
   res.send(Buffer.from(await response.arrayBuffer()));
+};
+
+// Opens the PDF in the browser for an admin or a subscribed student.
+const viewLectureFile = async (req, res) => {
+  const { subjectId, lectureId, fileId } = req.params;
+  const file = await subjectsService.getLectureFile(req.user, subjectId, lectureId, fileId);
+  await sendLectureFile(res, file, "inline");
+};
+
+// Saves the PDF. Admin only; students keep the view route.
+const downloadLectureFile = async (req, res) => {
+  const { subjectId, lectureId, fileId } = req.params;
+  const file = await subjectsService.getLectureFile(req.user, subjectId, lectureId, fileId, {
+    adminOnly: true,
+  });
+  await sendLectureFile(res, file, "attachment");
 };
 
 export {
   loadLecture,
   getLectureContent,
   getFinalQuizContent,
+  viewLectureFile,
   downloadLectureFile,
   createSubject,
   listSubjects,

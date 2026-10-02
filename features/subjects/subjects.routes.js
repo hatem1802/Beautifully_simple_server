@@ -20,6 +20,7 @@ import {
   deleteSubject,
   downloadLectureFile,
   getFinalQuizContent,
+  viewLectureFile,
   getLectureContent,
   getSubject,
   listSubjects,
@@ -62,10 +63,19 @@ router.get(
   validate,
   asyncHandler(getLectureContent)
 );
-// GET /api/subjects/:subjectId/lectures/:lectureId/files/:fileId/download (the PDF itself)
+// GET .../files/:fileId/view (opens the PDF in the browser: admin, or a student subscribed to the lecture)
+router.get(
+  "/:subjectId/lectures/:lectureId/files/:fileId/view",
+  authenticate,
+  fileParamsValidation,
+  validate,
+  asyncHandler(viewLectureFile)
+);
+// GET .../files/:fileId/download (saves the PDF; admin only)
 router.get(
   "/:subjectId/lectures/:lectureId/files/:fileId/download",
   authenticate,
+  authorize("admin"),
   fileParamsValidation,
   validate,
   asyncHandler(downloadLectureFile)

@@ -2477,13 +2477,40 @@
           }
         },
         {
-          "name": "Download lecture PDF (student)",
+          "name": "View lecture PDF (student)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}/files/{{downloadFileId}}/view",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{studentToken}}"
+                }
+              ]
+            },
+            "description": "Opens the PDF in the browser. Needs a PDF on lecture 1."
+          }
+        },
+        {
+          "name": "Download lecture PDF - student (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
                 ]
               }
             }
@@ -2499,8 +2526,35 @@
                   "value": "{{studentToken}}"
                 }
               ]
+            }
+          }
+        },
+        {
+          "name": "Download lecture PDF (admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "pm.test('attachment', () => pm.expect(pm.response.headers.get('Content-Disposition')).to.include('attachment'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/subjects/{{subjectId}}/lectures/{{lectureId}}/files/{{downloadFileId}}/download",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}"
+                }
+              ]
             },
-            "description": "Needs a PDF on lecture 1 (picked in Create subject or Upload lecture PDFs). Use Send and Download to save it."
+            "description": "Saves the PDF. Admin only."
           }
         },
         {

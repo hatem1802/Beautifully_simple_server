@@ -273,9 +273,13 @@ const getFinalQuizContent = async (requester, subjectId) => {
   return quizForStudent(subject.finalQuiz);
 };
 
-const getLectureFile = async (requester, subjectId, lectureId, fileId) => {
+const getLectureFile = async (requester, subjectId, lectureId, fileId, { adminOnly = false } = {}) => {
   const { lecture } = await findLecture(subjectId, lectureId);
-  await assertLectureAccess(requester, subjectId, lectureId);
+  if (adminOnly) {
+    if (!isAdmin(requester)) throw new ApiError(403, "Only an admin can download this file");
+  } else {
+    await assertLectureAccess(requester, subjectId, lectureId);
+  }
   const file = lecture.files.id(fileId);
   if (!file) throw new ApiError(404, "File not found in this lecture");
 
