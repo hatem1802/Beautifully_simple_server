@@ -1,8 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "nodemon ./index.js",
-    "start": "node ./index.js",
+    "dev": "node init && nodemon ./index.js",
+    "start": "node init && node ./index.js",
     "seed": "node ./seeders/index.js"
   },
   "dependencies": {
