@@ -2,4 +2,6 @@ export { default as ApiError } from "./ApiError.js";
 export { default as ApiResponse } from "./ApiResponse.js";
 export { toFilePath, removeFile, slugify, uniqueId, lectureFileName } from "./files.js";
 export { uploadPdf, isCloudinaryUrl } from "./cloudinary.js";
+export { saveOriginalPdf, readOriginalPdf } from "./pdfCache.js";
+export { stampPdf } from "./watermark.js";
 export { paginate, pageMeta } from "./pagination.js";

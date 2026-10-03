@@ -1,7 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Package, Subject, Subscription } from "../../models/index.js";
-import { ApiError, isCloudinaryUrl, lectureFileName, pageMeta, paginate, removeFile, uploadPdf } from "../../utils/index.js";
+import {
+  ApiError,
+  isCloudinaryUrl,
+  lectureFileName,
+  pageMeta,
+  paginate,
+  removeFile,
+  saveOriginalPdf,
+  uploadPdf,
+} from "../../utils/index.js";
 import { canOpenLecture, getAccess } from "../subscriptions/subscriptions.service.js";
 
 // pick* copy only the allowed fields so extra body fields never reach the database.
@@ -90,6 +99,7 @@ const originalName = (file) => Buffer.from(file.originalname, "latin1").toString
 const storeLectureFile = async (file, subjectName, lectureOrder, order) => {
   const url = await uploadPdf(file.buffer, `${lectureFileName(subjectName, lectureOrder)}.pdf`);
   file.path = url;
+  await saveOriginalPdf(url, file.buffer);
   return { name: originalName(file), url, order, size: file.size };
 };
 

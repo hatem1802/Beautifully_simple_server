@@ -1,4 +1,6 @@
-import { ApiError, ApiResponse } from "../../utils/index.js";
+import fs from "node:fs";
+import { User } from "../../models/index.js";
+import { ApiResponse, readOriginalPdf, stampPdf } from "../../utils/index.js";
 import * as subjectsService from "./subjects.service.js";
 
 const send = (res, statusCode, data, message) =>
@@ -98,27 +100,21 @@ const getFinalQuizContent = async (req, res) => {
   send(res, 200, { finalQuiz }, "Final quiz fetched successfully");
 };
 
-const sendLectureFile = async (res, file, disposition) => {
+const sendLectureFile = async (res, requester, file, disposition) => {
   const filename = file.name.replace(/"/g, "");
-  if (!file.url) {
-    if (disposition === "attachment") return res.download(file.path, file.name);
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
-    return res.sendFile(file.path);
-  }
-
-  const response = await fetch(file.url);
-  if (!response.ok) throw new ApiError(404, "File is missing on the server");
+  const viewer = await User.findById(requester.id).select("name email").lean();
+  const original = file.url ? await readOriginalPdf(file.url) : await fs.promises.readFile(file.path);
+  const stamped = await stampPdf(original, { name: viewer?.name, email: viewer?.email });
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `${disposition}; filename="${filename}"`);
-  res.send(Buffer.from(await response.arrayBuffer()));
+  res.send(stamped);
 };
 
 // Opens the PDF in the browser for an admin or a subscribed student.
 const viewLectureFile = async (req, res) => {
   const { subjectId, lectureId, fileId } = req.params;
   const file = await subjectsService.getLectureFile(req.user, subjectId, lectureId, fileId);
-  await sendLectureFile(res, file, "inline");
+  await sendLectureFile(res, req.user, file, "inline");
 };
 
 // Saves the PDF. Admin only; students keep the view route.
@@ -127,7 +123,7 @@ const downloadLectureFile = async (req, res) => {
   const file = await subjectsService.getLectureFile(req.user, subjectId, lectureId, fileId, {
     adminOnly: true,
   });
-  await sendLectureFile(res, file, "attachment");
+  await sendLectureFile(res, req.user, file, "attachment");
 };
 
 export {

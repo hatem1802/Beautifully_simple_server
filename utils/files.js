@@ -2,12 +2,14 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import { destroyPdf, isCloudinaryUrl } from "./cloudinary.js";
+import { deleteCachedPdf } from "./pdfCache.js";
 
 const toFilePath = (file) => file.path.split(path.sep).join("/");
 
 const removeFile = async (filePath) => {
   if (!filePath) return;
   if (isCloudinaryUrl(filePath)) {
+    await deleteCachedPdf(filePath);
     await destroyPdf(filePath);
     return;
   }

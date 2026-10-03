@@ -27,3 +27,5 @@ build/
 config.bat
 
 # Lecture PDFs live on Cloudinary. Payment proofs in uploads/ are committed.
+# Private originals used to stamp a watermark. Never served over HTTP.
+storage/
