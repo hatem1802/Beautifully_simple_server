@@ -15,14 +15,15 @@ const allowedOrigins = () =>
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins().includes(origin)) return callback(null, true);
-      return callback(new ApiError(403, "Origin not allowed"));
-    },
-  })
-);
+// app.use(
+//   cors({
+//     origin(origin, callback) {
+//       if (!origin || allowedOrigins().includes(origin)) return callback(null, true);
+//       return callback(new ApiError(403, "Origin not allowed"));
+//     },
+//   })
+// );
+app.use(cors());
 // cross-origin so the frontend can display payment-proof images served by this API.
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json());
